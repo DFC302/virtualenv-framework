@@ -80,3 +80,16 @@ virtualenv-activate() {
         return 1
     fi
 }
+
+# Deactivate the current virtual environment
+virtualenv-deactivate() {
+    # Check if deactivate function exists (means a venv is active)
+    if type deactivate >/dev/null 2>&1; then
+        deactivate
+        echo "Deactivated virtual environment"
+        return 0
+    else
+        echo "No virtual environment is currently active"
+        return 0
+    fi
+}
