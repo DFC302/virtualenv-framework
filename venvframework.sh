@@ -93,3 +93,57 @@ virtualenv-deactivate() {
         return 0
     fi
 }
+
+# Delete a virtual environment
+virtualenv-delete() {
+    local name="$1"
+    local force=false
+
+    # Check for --force flag
+    if [ "$2" = "--force" ] || [ "$1" = "--force" ]; then
+        force=true
+        if [ "$1" = "--force" ]; then
+            name="$2"
+        fi
+    fi
+
+    # Check if name argument is provided
+    if [ -z "$name" ]; then
+        echo "Error: Missing virtual environment name"
+        echo "Usage: virtualenv-delete <name> [--force]"
+        return 1
+    fi
+
+    # Check if venv exists
+    if ! virtualenv-exists "$name"; then
+        echo "Error: Virtual environment '$name' not found"
+        return 1
+    fi
+
+    # Check if trying to delete active venv
+    if [ -n "$VIRTUAL_ENV" ] && [ "$VIRTUAL_ENV" = "$VENVS_DIR/$name" ]; then
+        echo "Error: Cannot delete active virtual environment. Deactivate first."
+        return 1
+    fi
+
+    # Prompt for confirmation unless --force is used
+    if [ "$force" = false ]; then
+        read -p "Delete virtual environment '$name'? (y/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Deletion cancelled"
+            return 0
+        fi
+    fi
+
+    # Delete the virtual environment
+    rm -rf "$VENVS_DIR/$name"
+
+    if [ $? -eq 0 ]; then
+        echo "Deleted virtual environment '$name'"
+        return 0
+    else
+        echo "Error: Failed to delete virtual environment '$name'"
+        return 1
+    fi
+}
