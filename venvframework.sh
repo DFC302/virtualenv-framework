@@ -13,3 +13,12 @@ if [ ! -d "$VENVS_DIR" ]; then
         echo "Warning: Failed to create $VENVS_DIR - check permissions"
     fi
 fi
+
+# Helper function to check if a virtual environment exists
+virtualenv-exists() {
+    local name="$1"
+    if [ -z "$name" ]; then
+        return 1
+    fi
+    [ -d "$VENVS_DIR/$name" ] && [ -f "$VENVS_DIR/$name/bin/activate" ]
+}
