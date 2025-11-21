@@ -51,3 +51,32 @@ virtualenv-create() {
         return 1
     fi
 }
+
+# Activate a virtual environment
+virtualenv-activate() {
+    local name="$1"
+
+    # Check if name argument is provided
+    if [ -z "$name" ]; then
+        echo "Error: Missing virtual environment name"
+        echo "Usage: virtualenv-activate <name>"
+        return 1
+    fi
+
+    # Check if venv exists
+    if ! virtualenv-exists "$name"; then
+        echo "Error: Virtual environment '$name' not found"
+        return 1
+    fi
+
+    # Activate the virtual environment
+    source "$VENVS_DIR/$name/bin/activate"
+
+    if [ $? -eq 0 ]; then
+        echo "Activated virtual environment '$name'"
+        return 0
+    else
+        echo "Error: Failed to activate virtual environment '$name'"
+        return 1
+    fi
+}
