@@ -22,3 +22,32 @@ virtualenv-exists() {
     fi
     [ -d "$VENVS_DIR/$name" ] && [ -f "$VENVS_DIR/$name/bin/activate" ]
 }
+
+# Create a new virtual environment
+virtualenv-create() {
+    local name="$1"
+
+    # Check if name argument is provided
+    if [ -z "$name" ]; then
+        echo "Error: Missing virtual environment name"
+        echo "Usage: virtualenv-create <name>"
+        return 1
+    fi
+
+    # Check if venv already exists
+    if virtualenv-exists "$name"; then
+        echo "Error: Virtual environment '$name' already exists"
+        return 1
+    fi
+
+    # Create the virtual environment
+    python3 -m venv "$VENVS_DIR/$name"
+
+    if [ $? -eq 0 ]; then
+        echo "Created virtual environment '$name' at $VENVS_DIR/$name"
+        return 0
+    else
+        echo "Error: Failed to create virtual environment '$name'"
+        return 1
+    fi
+}
