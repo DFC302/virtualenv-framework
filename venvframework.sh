@@ -147,3 +147,26 @@ virtualenv-delete() {
         return 1
     fi
 }
+
+# List all virtual environments
+virtualenv-list() {
+    # Check if venvs directory has any subdirectories
+    if [ ! -d "$VENVS_DIR" ] || [ -z "$(ls -A $VENVS_DIR 2>/dev/null)" ]; then
+        echo "No virtual environments found in $VENVS_DIR"
+        return 0
+    fi
+
+    # List all venvs, marking the active one
+    for venv in "$VENVS_DIR"/*; do
+        if [ -d "$venv" ]; then
+            local venv_name=$(basename "$venv")
+
+            # Check if this venv is currently active
+            if [ -n "$VIRTUAL_ENV" ] && [ "$VIRTUAL_ENV" = "$venv" ]; then
+                echo "* $venv_name (active)"
+            else
+                echo "  $venv_name"
+            fi
+        fi
+    done
+}
