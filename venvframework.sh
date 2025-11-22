@@ -170,3 +170,45 @@ virtualenv-list() {
         fi
     done
 }
+
+# Show detailed information about a virtual environment
+virtualenv-info() {
+    local name="$1"
+
+    # Check if name argument is provided
+    if [ -z "$name" ]; then
+        echo "Error: Missing virtual environment name"
+        echo "Usage: virtualenv-info <name>"
+        return 1
+    fi
+
+    # Check if venv exists
+    if ! virtualenv-exists "$name"; then
+        echo "Error: Virtual environment '$name' not found"
+        return 1
+    fi
+
+    local venv_path="$VENVS_DIR/$name"
+
+    # Display information
+    echo "Virtual Environment: $name"
+    echo "Location: $venv_path"
+
+    # Get Python version
+    local python_version=$("$venv_path/bin/python" --version 2>&1)
+    echo "Python Version: $python_version"
+
+    # Get created date
+    if [ -d "$venv_path" ]; then
+        local created_date=$(stat -c %y "$venv_path" 2>/dev/null | cut -d' ' -f1)
+        if [ -z "$created_date" ]; then
+            # macOS fallback
+            created_date=$(stat -f %Sm -t %Y-%m-%d "$venv_path" 2>/dev/null)
+        fi
+        echo "Created: $created_date"
+    fi
+
+    # Get package count
+    local package_count=$("$venv_path/bin/pip" list 2>/dev/null | tail -n +3 | wc -l | tr -d ' ')
+    echo "Installed Packages: $package_count"
+}
