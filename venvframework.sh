@@ -151,7 +151,7 @@ virtualenv-delete() {
 # List all virtual environments
 virtualenv-list() {
     # Check if venvs directory has any subdirectories
-    if [ ! -d "$VENVS_DIR" ] || [ -z "$(ls -A $VENVS_DIR 2>/dev/null)" ]; then
+    if [ ! -d "$VENVS_DIR" ] || [ -z "$(ls -A "$VENVS_DIR" 2>/dev/null)" ]; then
         echo "No virtual environments found in $VENVS_DIR"
         return 0
     fi
