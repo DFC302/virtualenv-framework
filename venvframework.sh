@@ -212,3 +212,34 @@ virtualenv-info() {
     local package_count=$("$venv_path/bin/pip" freeze 2>/dev/null | wc -l | tr -d ' ')
     echo "Installed Packages: $package_count"
 }
+
+# Display help information
+virtualenv-help() {
+    cat << 'EOF'
+Python Virtual Environment Framework
+
+Commands:
+  virtualenv-create <name>              Create a new virtual environment
+  virtualenv-activate <name>            Activate a virtual environment
+  virtualenv-deactivate                 Deactivate current virtual environment
+  virtualenv-delete <name> [--force]    Delete a virtual environment
+  virtualenv-list                       List all virtual environments
+  virtualenv-info <name>                Show details about a virtual environment
+  virtualenv-help                       Show this help message
+
+Storage location: ~/.venvs/
+
+Examples:
+  virtualenv-create myproject
+  virtualenv-activate myproject
+  virtualenv-deactivate
+  virtualenv-delete myproject
+  virtualenv-delete myproject --force
+  virtualenv-list
+  virtualenv-info myproject
+
+Installation:
+  Add this line to your .bashrc or .zshrc:
+    source /path/to/venvframework.sh
+EOF
+}
