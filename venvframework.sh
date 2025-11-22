@@ -209,6 +209,6 @@ virtualenv-info() {
     fi
 
     # Get package count
-    local package_count=$("$venv_path/bin/pip" list 2>/dev/null | tail -n +3 | wc -l | tr -d ' ')
+    local package_count=$("$venv_path/bin/pip" freeze 2>/dev/null | wc -l | tr -d ' ')
     echo "Installed Packages: $package_count"
 }
