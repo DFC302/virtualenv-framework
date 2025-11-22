@@ -13,6 +13,17 @@ A bash shell function framework for easily managing Python virtual environments 
 
 ## Installation
 
+### Quick Install
+
+Run the installation script:
+```bash
+./install.sh
+```
+
+This will automatically add venvframework to your shell configuration.
+
+### Manual Install
+
 1. Clone or download `venvframework.sh`
 
 2. Add to your shell configuration:
