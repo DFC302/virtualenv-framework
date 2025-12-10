@@ -289,24 +289,34 @@ virtualenv-help() {
 Python Virtual Environment Framework
 
 Commands:
-  virtualenv-create <name>              Create a new virtual environment
+  virtualenv-create <name> [--python <executable>]
+                                        Create a new virtual environment
+                                        Use --python to specify Python version (e.g., python3.10)
   virtualenv-activate <name>            Activate a virtual environment
+  virtualenv-switch <name>              Switch to a different virtual environment
   virtualenv-deactivate                 Deactivate current virtual environment
   virtualenv-delete <name> [--force]    Delete a virtual environment
+  virtualenv-delete-all                 Delete all virtual environments (requires confirmation)
   virtualenv-list                       List all virtual environments
   virtualenv-info <name>                Show details about a virtual environment
+  virtualenv-python-versions            List available Python versions
   virtualenv-help                       Show this help message
 
 Storage location: ~/.venvs/
 
 Examples:
   virtualenv-create myproject
+  virtualenv-create myproject --python python3.13
+  virtualenv-create legacy --python python2.7
   virtualenv-activate myproject
+  virtualenv-switch otherproject
   virtualenv-deactivate
   virtualenv-delete myproject
   virtualenv-delete myproject --force
+  virtualenv-delete-all
   virtualenv-list
   virtualenv-info myproject
+  virtualenv-python-versions
 
 Installation:
   Add this line to your .bashrc or .zshrc:
