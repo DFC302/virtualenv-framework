@@ -213,6 +213,76 @@ virtualenv-info() {
     echo "Installed Packages: $package_count"
 }
 
+# List available Python versions that can create virtual environments
+virtualenv-python-versions() {
+    # Check if PATH is set
+    if [ -z "$PATH" ]; then
+        echo "Error: PATH environment variable is not set"
+        return 1
+    fi
+
+    # Store found Python executables
+    local pythons=()
+    local seen=()
+
+    # Search through PATH directories
+    IFS=':' read -ra PATH_DIRS <<< "$PATH"
+    for dir in "${PATH_DIRS[@]}"; do
+        # Skip if directory doesn't exist
+        [ ! -d "$dir" ] && continue
+
+        # Find all python* executables in this directory
+        for python_path in "$dir"/python*; do
+            # Skip if not a file or not executable
+            [ ! -f "$python_path" ] && continue
+            [ ! -x "$python_path" ] && continue
+
+            # Get just the executable name
+            local python_name=$(basename "$python_path")
+
+            # Skip if already seen (deduplication)
+            local already_seen=false
+            for seen_name in "${seen[@]}"; do
+                if [ "$seen_name" = "$python_name" ]; then
+                    already_seen=true
+                    break
+                fi
+            done
+            [ "$already_seen" = true ] && continue
+
+            # Check if this Python has venv module
+            if "$python_path" -m venv --help >/dev/null 2>&1; then
+                pythons+=("$python_name")
+                seen+=("$python_name")
+            fi
+        done
+    done
+
+    # Check if any Python versions found
+    if [ ${#pythons[@]} -eq 0 ]; then
+        echo "No Python installations found in PATH"
+        echo "Install Python or check your PATH environment variable"
+        return 0
+    fi
+
+    # Sort Python versions intelligently (newest first)
+    # Use version sort if available, otherwise regular sort
+    local sorted_pythons
+    if command -v sort >/dev/null 2>&1; then
+        sorted_pythons=($(printf '%s\n' "${pythons[@]}" | sort -V -r 2>/dev/null || printf '%s\n' "${pythons[@]}" | sort -r))
+    else
+        sorted_pythons=("${pythons[@]}")
+    fi
+
+    # Display results
+    echo "Available Python versions:"
+    for python in "${sorted_pythons[@]}"; do
+        echo "  $python"
+    done
+    echo ""
+    echo "Use with: virtualenv-create <name> --python <version>"
+}
+
 # Display help information
 virtualenv-help() {
     cat << 'EOF'
