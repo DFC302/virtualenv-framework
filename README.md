@@ -5,9 +5,12 @@ A bash shell function framework for easily managing Python virtual environments 
 ## Features
 
 - Create, activate, deactivate, and delete virtual environments
+- Switch between virtual environments seamlessly
 - Centralized storage in `~/.venvs/` directory
 - List all available virtual environments
+- List available Python versions for virtual environment creation
 - View detailed information about any virtual environment
+- Delete all virtual environments at once
 - Safety confirmations for destructive operations
 - Works from any directory
 
@@ -70,6 +73,13 @@ virtualenv-list
 virtualenv-info myproject
 ```
 
+### List available Python versions
+```bash
+virtualenv-python-versions
+```
+
+This shows all Python installations in your PATH that can create virtual environments.
+
 ### Delete a virtual environment
 ```bash
 # With confirmation prompt
@@ -83,6 +93,21 @@ virtualenv-delete myproject --force
 ```bash
 virtualenv-help
 ```
+
+## Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `virtualenv-create <name>` | Create a new virtual environment |
+| `virtualenv-activate <name>` | Activate a virtual environment |
+| `virtualenv-switch <name>` | Switch to a different virtual environment |
+| `virtualenv-deactivate` | Deactivate the current virtual environment |
+| `virtualenv-delete <name> [--force]` | Delete a virtual environment |
+| `virtualenv-delete-all` | Delete all virtual environments (always requires confirmation) |
+| `virtualenv-list` | List all virtual environments |
+| `virtualenv-info <name>` | Show detailed information about a virtual environment |
+| `virtualenv-python-versions` | List available Python versions for virtual environments |
+| `virtualenv-help` | Display help message |
 
 ## Storage
 
