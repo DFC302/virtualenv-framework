@@ -58,6 +58,13 @@ virtualenv-create myproject
 virtualenv-activate myproject
 ```
 
+### Switch to a different virtual environment
+```bash
+virtualenv-switch otherproject
+```
+
+This will deactivate the current virtual environment (if any) and activate the specified one.
+
 ### Deactivate current virtual environment
 ```bash
 virtualenv-deactivate
@@ -88,6 +95,15 @@ virtualenv-delete myproject
 # Without confirmation
 virtualenv-delete myproject --force
 ```
+
+### Delete all virtual environments
+```bash
+virtualenv-delete-all
+```
+
+This will delete all virtual environments with a safety confirmation. The `--force` flag does NOT work with this command - you must always confirm manually.
+
+**Note:** You cannot delete virtual environments while one is active. Deactivate first.
 
 ### Show help
 ```bash

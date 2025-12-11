@@ -8,18 +8,25 @@ echo "Python Virtual Environment Framework - Installation"
 echo "=================================================="
 echo ""
 
-# Detect shell
-if [ -n "$BASH_VERSION" ]; then
-    SHELL_CONFIG="$HOME/.bashrc"
-    SHELL_NAME="bash"
-elif [ -n "$ZSH_VERSION" ]; then
-    SHELL_CONFIG="$HOME/.zshrc"
-    SHELL_NAME="zsh"
-else
-    echo "Unsupported shell. Please add the following line manually to your shell config:"
-    echo "  source $VENVFRAMEWORK_PATH"
-    exit 1
-fi
+# Detect user's login shell
+USER_SHELL=$(basename "$SHELL")
+
+case "$USER_SHELL" in
+    bash)
+        SHELL_CONFIG="$HOME/.bashrc"
+        SHELL_NAME="bash"
+        ;;
+    zsh)
+        SHELL_CONFIG="$HOME/.zshrc"
+        SHELL_NAME="zsh"
+        ;;
+    *)
+        echo "Unsupported shell: $USER_SHELL"
+        echo "Please add the following line manually to your shell config:"
+        echo "  source $VENVFRAMEWORK_PATH"
+        exit 1
+        ;;
+esac
 
 echo "Detected shell: $SHELL_NAME"
 echo "Config file: $SHELL_CONFIG"

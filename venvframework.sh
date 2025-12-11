@@ -25,12 +25,46 @@ virtualenv-exists() {
 
 # Create a new virtual environment
 virtualenv-create() {
-    local name="$1"
+    local name=""
+    local python_cmd="python3"
+
+    # Parse arguments
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --python)
+                if [ -z "$2" ]; then
+                    echo "Error: --python requires a Python executable argument"
+                    echo "Usage: virtualenv-create <name> [--python <python_executable>]"
+                    return 1
+                fi
+                python_cmd="$2"
+                shift 2
+                ;;
+            *)
+                if [ -z "$name" ]; then
+                    name="$1"
+                    shift
+                else
+                    echo "Error: Unexpected argument '$1'"
+                    echo "Usage: virtualenv-create <name> [--python <python_executable>]"
+                    return 1
+                fi
+                ;;
+        esac
+    done
 
     # Check if name argument is provided
     if [ -z "$name" ]; then
         echo "Error: Missing virtual environment name"
-        echo "Usage: virtualenv-create <name>"
+        echo "Usage: virtualenv-create <name> [--python <python_executable>]"
+        return 1
+    fi
+
+    # Check if Python executable exists
+    if ! command -v "$python_cmd" >/dev/null 2>&1; then
+        echo "Error: Python executable '$python_cmd' not found"
+        echo "Available Python versions:"
+        ls -1 /usr/bin/python* 2>/dev/null | grep -E 'python[0-9.]*$' | sed 's/^/  /'
         return 1
     fi
 
@@ -41,10 +75,11 @@ virtualenv-create() {
     fi
 
     # Create the virtual environment
-    python3 -m venv "$VENVS_DIR/$name"
+    "$python_cmd" -m venv "$VENVS_DIR/$name"
 
     if [ $? -eq 0 ]; then
-        echo "Created virtual environment '$name' at $VENVS_DIR/$name"
+        local version=$("$VENVS_DIR/$name/bin/python" --version 2>&1)
+        echo "Created virtual environment '$name' with $version at $VENVS_DIR/$name"
         return 0
     else
         echo "Error: Failed to create virtual environment '$name'"
@@ -94,6 +129,44 @@ virtualenv-deactivate() {
     fi
 }
 
+# Switch from current virtual environment to another
+virtualenv-switch() {
+    local name="$1"
+
+    # Check if name argument is provided
+    if [ -z "$name" ]; then
+        echo "Error: Missing virtual environment name"
+        echo "Usage: virtualenv-switch <name>"
+        return 1
+    fi
+
+    # Check if target venv exists
+    if ! virtualenv-exists "$name"; then
+        echo "Error: Virtual environment '$name' not found"
+        return 1
+    fi
+
+    # Deactivate current venv if one is active
+    if [ -n "$VIRTUAL_ENV" ]; then
+        local current_venv=$(basename "$VIRTUAL_ENV")
+        if type deactivate >/dev/null 2>&1; then
+            deactivate
+            echo "Deactivated virtual environment '$current_venv'"
+        fi
+    fi
+
+    # Activate the new virtual environment
+    source "$VENVS_DIR/$name/bin/activate"
+
+    if [ $? -eq 0 ]; then
+        echo "Activated virtual environment '$name'"
+        return 0
+    else
+        echo "Error: Failed to activate virtual environment '$name'"
+        return 1
+    fi
+}
+
 # Delete a virtual environment
 virtualenv-delete() {
     local name="$1"
@@ -128,7 +201,8 @@ virtualenv-delete() {
 
     # Prompt for confirmation unless --force is used
     if [ "$force" = false ]; then
-        read -p "Delete virtual environment '$name'? (y/n) " -n 1 -r
+        printf "Delete virtual environment '$name'? (y/n) "
+        read -r REPLY
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             echo "Deletion cancelled"
@@ -146,6 +220,69 @@ virtualenv-delete() {
         echo "Error: Failed to delete virtual environment '$name'"
         return 1
     fi
+}
+
+# Delete all virtual environments
+virtualenv-delete-all() {
+    # Check if venvs directory has any subdirectories
+    if [ ! -d "$VENVS_DIR" ] || [ -z "$(ls -A "$VENVS_DIR" 2>/dev/null)" ]; then
+        echo "No virtual environments found in $VENVS_DIR"
+        return 0
+    fi
+
+    # Count virtual environments
+    local venv_count=0
+    for venv in "$VENVS_DIR"/*; do
+        if [ -d "$venv" ]; then
+            venv_count=$((venv_count + 1))
+        fi
+    done
+
+    # Check if any venv is currently active
+    if [ -n "$VIRTUAL_ENV" ]; then
+        echo "Error: A virtual environment is currently active. Deactivate first."
+        return 1
+    fi
+
+    # Display warning and prompt for confirmation (--force flag is ignored)
+    echo "WARNING: This will delete ALL $venv_count virtual environment(s):"
+    for venv in "$VENVS_DIR"/*; do
+        if [ -d "$venv" ]; then
+            echo "  - $(basename "$venv")"
+        fi
+    done
+    echo ""
+    printf "Are you sure you want to delete all virtual environments? (Y/N) "
+    read -r REPLY
+    echo
+
+    # Check response (case insensitive)
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deletion cancelled"
+        return 0
+    fi
+
+    # Delete all virtual environments
+    local deleted_count=0
+    local failed_count=0
+    for venv in "$VENVS_DIR"/*; do
+        if [ -d "$venv" ]; then
+            local venv_name=$(basename "$venv")
+            rm -rf "$venv"
+            if [ $? -eq 0 ]; then
+                echo "Deleted virtual environment '$venv_name'"
+                deleted_count=$((deleted_count + 1))
+            else
+                echo "Error: Failed to delete virtual environment '$venv_name'"
+                failed_count=$((failed_count + 1))
+            fi
+        fi
+    done
+
+    # Summary
+    echo ""
+    echo "Deletion complete: $deleted_count deleted, $failed_count failed"
+    return 0
 }
 
 # List all virtual environments
