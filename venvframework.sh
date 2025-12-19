@@ -352,6 +352,12 @@ virtualenv-info() {
 
 # List available Python versions that can create virtual environments
 virtualenv-python-versions() {
+    # Enable null_glob for zsh compatibility (ignored in bash)
+    # This prevents errors when python* glob doesn't match any files
+    if [ -n "$ZSH_VERSION" ]; then
+        setopt local_options null_glob
+    fi
+
     # Check if PATH is set
     if [ -z "$PATH" ]; then
         echo "Error: PATH environment variable is not set"
@@ -363,8 +369,8 @@ virtualenv-python-versions() {
     local seen=()
 
     # Search through PATH directories
-    IFS=':' read -ra PATH_DIRS <<< "$PATH"
-    for dir in "${PATH_DIRS[@]}"; do
+    # Use process substitution with tr for bash/zsh compatibility
+    while IFS= read -r dir; do
         # Skip if directory doesn't exist
         [ ! -d "$dir" ] && continue
 
@@ -393,7 +399,7 @@ virtualenv-python-versions() {
                 seen+=("$python_name")
             fi
         done
-    done
+    done < <(echo "$PATH" | tr ':' '\n')
 
     # Check if any Python versions found
     if [ ${#pythons[@]} -eq 0 ]; then
